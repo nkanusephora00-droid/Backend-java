@@ -141,14 +141,14 @@ public class AuthController {
     
     @PostMapping("/reset-password")
     @Operation(summary = "Réinitialiser le mot de passe", description = "Réinitialise le mot de passe avec le token reçu")
-    public ResponseEntity<String> resetPassword(@Valid @RequestBody PasswordResetConfirm request) {
+    public ResponseEntity<String> resetPassword(@Valid @RequestBody PasswordResetConfirm confirm) {
         try {
-            String username = jwtTokenProvider.validateResetToken(request.getToken());
+            String username = jwtTokenProvider.validateResetToken(confirm.getToken());
             
             User user = userRepository.findByUsername(username)
                     .orElseThrow(() -> new RuntimeException("Token invalide ou expiré"));
             
-            user.setHashedPassword(passwordEncoder.encode(request.getNewPassword()));
+            user.setHashedPassword(passwordEncoder.encode(confirm.getNewPassword()));
             userRepository.save(user);
             
             return ResponseEntity.ok("Mot de passe réinitialisé avec succès");
@@ -156,5 +156,48 @@ public class AuthController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body("Token invalide ou expiré");
         }
+    }
+    
+    @PostMapping("/init-admin")
+    @Operation(summary = "Initialiser l'admin", description = "Crée l'utilisateur admin initial (à utiliser uniquement pour la première configuration)")
+    public ResponseEntity<String> initAdmin() {
+        // Vérifier si un admin existe déjà
+        boolean adminExists = userRepository.findAll().stream()
+                .anyMatch(user -> "admin".equals(user.getRole()));
+        
+        if (adminExists) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body("Un admin existe déjà");
+        }
+        
+        // Créer l'admin par défaut
+        User admin = User.builder()
+                .username("admin")
+                .email("admin@itaccess.com")
+                .role("admin")
+                .isActive(true)
+                .hashedPassword(passwordEncoder.encode("admin123"))
+                .build();
+        
+        userRepository.save(admin);
+        
+        return ResponseEntity.ok("Admin initial créé avec succès. Username: admin, Password: admin123");
+    }
+    
+    @PostMapping("/activate-user")
+    @Operation(summary = "Activer un utilisateur", description = "Active un utilisateur par son username (accessible via Swagger)")
+    public ResponseEntity<String> activateUser(@RequestParam String username) {
+        User user = userRepository.findByUsername(username)
+                .orElse(null);
+        
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body("Utilisateur non trouvé");
+        }
+        
+        user.setIsActive(true);
+        userRepository.save(user);
+        
+        return ResponseEntity.ok("Utilisateur " + username + " activé avec succès");
     }
 }
