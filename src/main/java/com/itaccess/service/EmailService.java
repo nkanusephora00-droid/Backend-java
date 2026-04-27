@@ -21,6 +21,10 @@ public class EmailService {
     private String frontendUrl;
     
     public void sendPasswordResetEmail(String toEmail, String username, String resetToken) {
+        log.info("Tentative d'envoi d'email de réinitialisation à: {}", toEmail);
+        log.info("From email: {}", fromEmail);
+        log.info("Frontend URL: {}", frontendUrl);
+        
         try {
             SimpleMailMessage message = new SimpleMailMessage();
             message.setFrom(fromEmail);
@@ -44,10 +48,11 @@ public class EmailService {
             message.setText(emailBody);
             
             mailSender.send(message);
-            log.info("Email de réinitialisation envoyé à: {}", toEmail);
+            log.info("Email de réinitialisation envoyé avec succès à: {}", toEmail);
         } catch (Exception e) {
-            log.error("Erreur lors de l'envoi de l'email à {}: {}", toEmail, e.getMessage());
-            throw new RuntimeException("Impossible d'envoyer l'email de réinitialisation", e);
+            log.error("Erreur lors de l'envoi de l'email à {}: {}", toEmail, e.getMessage(), e);
+            log.error("Type d'erreur: {}", e.getClass().getName());
+            throw new RuntimeException("Impossible d'envoyer l'email de réinitialisation: " + e.getMessage(), e);
         }
     }
     

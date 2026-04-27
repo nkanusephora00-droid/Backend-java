@@ -30,20 +30,49 @@ public class ApkService {
     
     public ApkFileDTO uploadApk(MultipartFile file, Long applicationId, Long uploadedBy, 
                                   String version, String packageName, String description) throws IOException {
+        log.info("Starting APK upload: file={}, size={}, user={}", file.getOriginalFilename(), file.getSize(), uploadedBy);
+        
         // Créer le répertoire s'il n'existe pas
         Path uploadPath = Paths.get(uploadDir);
+        log.info("Upload directory: {}", uploadPath.toAbsolutePath());
+        
         if (!Files.exists(uploadPath)) {
-            Files.createDirectories(uploadPath);
+            log.info("Directory does not exist, creating: {}", uploadPath);
+            try {
+                Files.createDirectories(uploadPath);
+                log.info("Directory created successfully");
+            } catch (IOException e) {
+                log.error("Failed to create upload directory: {}", e.getMessage(), e);
+                throw new IOException("Impossible de créer le répertoire d'upload: " + e.getMessage());
+            }
+        }
+        
+        // Vérifier si le répertoire est accessible en écriture
+        if (!Files.isWritable(uploadPath)) {
+            log.error("Upload directory is not writable: {}", uploadPath);
+            throw new IOException("Le répertoire d'upload n'est pas accessible en écriture");
         }
         
         // Générer un nom de fichier unique
         String originalFileName = file.getOriginalFilename();
+        if (originalFileName == null || originalFileName.isEmpty()) {
+            throw new IOException("Nom de fichier invalide");
+        }
+        
         String fileExtension = originalFileName.substring(originalFileName.lastIndexOf("."));
         String uniqueFileName = UUID.randomUUID().toString() + fileExtension;
         Path filePath = uploadPath.resolve(uniqueFileName);
         
+        log.info("Saving file to: {}", filePath.toAbsolutePath());
+        
         // Sauvegarder le fichier
-        Files.copy(file.getInputStream(), filePath);
+        try {
+            Files.copy(file.getInputStream(), filePath);
+            log.info("File saved successfully");
+        } catch (IOException e) {
+            log.error("Failed to save file: {}", e.getMessage(), e);
+            throw new IOException("Impossible de sauvegarder le fichier: " + e.getMessage());
+        }
         
         // Créer l'entité
         ApkFile apkFile = ApkFile.builder()
@@ -59,7 +88,7 @@ public class ApkService {
                 .build();
         
         ApkFile saved = apkFileRepository.save(apkFile);
-        log.info("APK uploaded: {} by user {}", originalFileName, uploadedBy);
+        log.info("APK uploaded successfully: {} by user {}", originalFileName, uploadedBy);
         
         return toDTO(saved);
     }

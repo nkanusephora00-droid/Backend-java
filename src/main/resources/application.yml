@@ -49,13 +49,13 @@ app:
   
   jwt:
     secret: ${JWT_SECRET:please-change-this-in-production-use-a-secure-random-key-at-least-256-bits}
-    expiration: 1800000
+    expiration: 86400000
   
   frontend:
     url: ${FRONTEND_URL:http://localhost:3000}
   
   upload:
-    dir: ${UPLOAD_DIR:uploads/apk}
+    dir: ${UPLOAD_DIR:/tmp/uploads/apk}
     max-file-size: ${MAX_FILE_SIZE:150MB}
 
 logging:
