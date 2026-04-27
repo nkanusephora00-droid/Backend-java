@@ -6,6 +6,7 @@ import com.itaccess.security.CurrentUser;
 import com.itaccess.security.UserInfo;
 import com.itaccess.service.TestSessionService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -18,7 +19,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/test-sessions")
 @RequiredArgsConstructor
-@Tag(name = "Test Sessions", description = "Endpoints pour la gestion des sessions de test")
+@Tag(name = "Test Sessions", description = "")
 public class TestSessionController {
     
     private final TestSessionService testSessionService;
@@ -39,7 +40,7 @@ public class TestSessionController {
     @Operation(summary = "Créer une session", description = "Crée une nouvelle session de test")
     public ResponseEntity<TestSessionDTO> createTestSession(
             @Valid @RequestBody TestSessionRequest request,
-            @CurrentUser UserInfo currentUser) {
+            @Parameter(hidden = true) @CurrentUser UserInfo currentUser) {
         TestSessionDTO created = testSessionService.createTestSession(request, currentUser.getId());
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }

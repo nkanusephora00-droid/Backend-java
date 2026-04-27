@@ -107,4 +107,42 @@ public class JwtTokenProvider {
         }
         return false;
     }
+    
+    public String generateResetToken(String username) {
+        SecretKey key = Keys.hmacShaKeyFor(jwtSecret.getBytes(StandardCharsets.UTF_8));
+        
+        Date now = new Date();
+        Date expiryDate = new Date(now.getTime() + 1800000); // 30 minutes
+        
+        return Jwts.builder()
+                .subject(username)
+                .claim("type", "password_reset")
+                .issuedAt(now)
+                .expiration(expiryDate)
+                .signWith(key)
+                .compact();
+    }
+    
+    public String validateResetToken(String token) {
+        try {
+            SecretKey key = Keys.hmacShaKeyFor(jwtSecret.getBytes(StandardCharsets.UTF_8));
+            
+            Claims claims = Jwts.parser()
+                    .verifyWith(key)
+                    .build()
+                    .parseSignedClaims(token)
+                    .getPayload();
+            
+            String type = claims.get("type", String.class);
+            if (!"password_reset".equals(type)) {
+                throw new IllegalArgumentException("Token invalide");
+            }
+            
+            return claims.getSubject();
+        } catch (ExpiredJwtException ex) {
+            throw new RuntimeException("Token expiré");
+        } catch (Exception ex) {
+            throw new RuntimeException("Token invalide");
+        }
+    }
 }

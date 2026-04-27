@@ -4,6 +4,7 @@ import com.itaccess.dto.*;
 import com.itaccess.entity.User;
 import com.itaccess.repository.UserRepository;
 import com.itaccess.security.JwtTokenProvider;
+import com.itaccess.service.EmailService;
 import com.itaccess.service.SettingService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -16,18 +17,21 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/auth")
 @RequiredArgsConstructor
-@Tag(name = "Authentication", description = "Endpoints pour l'authentification")
+@Tag(name = "Authentication", description = "")
 public class AuthController {
     
     private final AuthenticationManager authenticationManager;
     private final JwtTokenProvider jwtTokenProvider;
     private final UserRepository userRepository;
     private final SettingService settingService;
+    private final EmailService emailService;
+    private final PasswordEncoder passwordEncoder;
     
     @PostMapping(value = "/token", consumes = {"application/json", "application/x-www-form-urlencoded"})
     @Operation(summary = "Connexion", description = "Authentifie l'utilisateur et retourne un token JWT")
@@ -121,5 +125,36 @@ public class AuthController {
     public ResponseEntity<String> refreshSecretKey() {
         settingService.refreshSecretKey();
         return ResponseEntity.ok("SECRET_KEY vérifié/régénéré avec succès");
+    }
+    
+    @PostMapping("/forgot-password")
+    @Operation(summary = "Demande de réinitialisation", description = "Envoie un email de réinitialisation de mot de passe")
+    public ResponseEntity<String> forgotPassword(@Valid @RequestBody PasswordResetRequest request) {
+        userRepository.findByEmail(request.getEmail()).ifPresent(user -> {
+            // Générer un token temporaire (en production, utiliser un token UUID stocké en DB avec expiration)
+            String resetToken = jwtTokenProvider.generateResetToken(user.getUsername());
+            emailService.sendPasswordResetEmail(user.getEmail(), user.getUsername(), resetToken);
+        });
+        
+        return ResponseEntity.ok("Si cet email existe, un lien de réinitialisation a été envoyé");
+    }
+    
+    @PostMapping("/reset-password")
+    @Operation(summary = "Réinitialiser le mot de passe", description = "Réinitialise le mot de passe avec le token reçu")
+    public ResponseEntity<String> resetPassword(@Valid @RequestBody PasswordResetConfirm request) {
+        try {
+            String username = jwtTokenProvider.validateResetToken(request.getToken());
+            
+            User user = userRepository.findByUsername(username)
+                    .orElseThrow(() -> new RuntimeException("Token invalide ou expiré"));
+            
+            user.setHashedPassword(passwordEncoder.encode(request.getNewPassword()));
+            userRepository.save(user);
+            
+            return ResponseEntity.ok("Mot de passe réinitialisé avec succès");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body("Token invalide ou expiré");
+        }
     }
 }

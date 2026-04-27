@@ -1,10 +1,15 @@
 package com.itaccess.service;
 
 import com.itaccess.dto.ApplicationDTO;
+import com.itaccess.dto.PageResponse;
 import com.itaccess.entity.Application;
 import com.itaccess.exception.ResourceNotFoundException;
 import com.itaccess.repository.ApplicationRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,10 +22,16 @@ public class ApplicationService {
     
     private final ApplicationRepository applicationRepository;
     
-    public List<ApplicationDTO> getAllApplications() {
-        return applicationRepository.findAll().stream()
+    public PageResponse<ApplicationDTO> getAllApplications(int page, int size, String sortBy, String sortDir) {
+        Sort sort = sortDir.equalsIgnoreCase("desc") ? Sort.by(sortBy).descending() : Sort.by(sortBy).ascending();
+        Pageable pageable = PageRequest.of(page, size, sort);
+        Page<Application> applicationPage = applicationRepository.findAll(pageable);
+        
+        List<ApplicationDTO> content = applicationPage.getContent().stream()
                 .map(this::toDTO)
                 .collect(Collectors.toList());
+        
+        return PageResponse.of(content, applicationPage.getNumber(), applicationPage.getSize(), applicationPage.getTotalElements());
     }
     
     public ApplicationDTO getApplicationById(Long id) {

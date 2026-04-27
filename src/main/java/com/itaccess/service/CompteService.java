@@ -2,12 +2,17 @@ package com.itaccess.service;
 
 import com.itaccess.dto.CompteDTO;
 import com.itaccess.dto.CompteRequest;
+import com.itaccess.dto.PageResponse;
 import com.itaccess.entity.Application;
 import com.itaccess.entity.Compte;
 import com.itaccess.exception.ResourceNotFoundException;
 import com.itaccess.repository.ApplicationRepository;
 import com.itaccess.repository.CompteRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,10 +26,16 @@ public class CompteService {
     private final CompteRepository compteRepository;
     private final ApplicationRepository applicationRepository;
     
-    public List<CompteDTO> getAllComptes() {
-        return compteRepository.findAll().stream()
+    public PageResponse<CompteDTO> getAllComptes(int page, int size, String sortBy, String sortDir) {
+        Sort sort = sortDir.equalsIgnoreCase("desc") ? Sort.by(sortBy).descending() : Sort.by(sortBy).ascending();
+        Pageable pageable = PageRequest.of(page, size, sort);
+        Page<Compte> comptePage = compteRepository.findAll(pageable);
+        
+        List<CompteDTO> content = comptePage.getContent().stream()
                 .map(this::toDTO)
                 .collect(Collectors.toList());
+        
+        return PageResponse.of(content, comptePage.getNumber(), comptePage.getSize(), comptePage.getTotalElements());
     }
     
     public CompteDTO getCompteById(Long id) {

@@ -6,6 +6,7 @@ import com.itaccess.security.CurrentUser;
 import com.itaccess.security.UserInfo;
 import com.itaccess.service.TestService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -18,7 +19,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/tests")
 @RequiredArgsConstructor
-@Tag(name = "Tests", description = "Endpoints pour la gestion des tests")
+@Tag(name = "Tests", description = "")
 public class TestController {
     
     private final TestService testService;
@@ -42,8 +43,8 @@ public class TestController {
     @PostMapping
     @Operation(summary = "Créer un test", description = "Crée un nouveau test")
     public ResponseEntity<TestDTO> createTest(
-            @Valid @RequestBody TestRequest request,
-            @CurrentUser UserInfo currentUser) {
+            @Parameter(hidden = true) @CurrentUser UserInfo currentUser,
+            @Valid @RequestBody TestRequest request) {
         TestDTO created = testService.createTest(request, currentUser.getId());
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }

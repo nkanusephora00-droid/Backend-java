@@ -6,6 +6,7 @@ import com.itaccess.security.CurrentUser;
 import com.itaccess.security.UserInfo;
 import com.itaccess.service.TodoService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -18,14 +19,14 @@ import java.util.List;
 @RestController
 @RequestMapping("/todos")
 @RequiredArgsConstructor
-@Tag(name = "Todos", description = "Endpoints pour la gestion des tâches")
+@Tag(name = "Todos", description = "")
 public class TodoController {
     
     private final TodoService todoService;
     
     @GetMapping
     @Operation(summary = "Liste des tâches", description = "Retourne toutes les tâches (admin voit toutes les tâches)")
-    public ResponseEntity<List<TodoDTO>> getAllTodos(@CurrentUser UserInfo currentUser) {
+    public ResponseEntity<List<TodoDTO>> getAllTodos(@Parameter(hidden = true) @CurrentUser UserInfo currentUser) {
         if ("admin".equals(currentUser.getRole())) {
             return ResponseEntity.ok(todoService.getAll());
         }
@@ -41,8 +42,8 @@ public class TodoController {
     @PostMapping
     @Operation(summary = "Créer une tâche", description = "Crée une nouvelle tâche")
     public ResponseEntity<TodoDTO> createTodo(
-            @Valid @RequestBody TodoRequest request,
-            @CurrentUser UserInfo currentUser) {
+            @Parameter(hidden = true) @CurrentUser UserInfo currentUser,
+            @Valid @RequestBody TodoRequest request) {
         TodoDTO created = todoService.create(request, currentUser.getId());
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
