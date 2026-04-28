@@ -47,6 +47,12 @@ app:
     secret: ${JWT_SECRET:please-change-this-in-production-use-a-secure-random-key-at-least-256-bits}
     expiration: 86400000
   
+  security:
+    # Configuration de sécurité pour la production
+    require-activation: true
+    max-login-attempts: 5
+    lockout-duration-minutes: 15
+  
   frontend:
     url: ${FRONTEND_URL:http://localhost:3000}
   

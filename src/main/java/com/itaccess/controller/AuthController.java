@@ -160,7 +160,15 @@ public class AuthController {
     
     @PostMapping("/init-admin")
     @Operation(summary = "Initialiser l'admin", description = "Crée l'utilisateur admin initial (à utiliser uniquement pour la première configuration)")
-    public ResponseEntity<String> initAdmin() {
+    public ResponseEntity<String> initAdmin(@RequestParam(required = false) String initKey) {
+        // Clé de sécurité pour éviter les créations non autorisées
+        String secureInitKey = "IT_ACCESS_INIT_2024_SECURE_KEY_CHANGE_ME";
+        
+        if (initKey == null || !initKey.equals(secureInitKey)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body("Clé d'initialisation invalide");
+        }
+        
         // Vérifier si un admin existe déjà
         boolean adminExists = userRepository.findAll().stream()
                 .anyMatch(user -> "admin".equals(user.getRole()));
@@ -181,12 +189,19 @@ public class AuthController {
         
         userRepository.save(admin);
         
-        return ResponseEntity.ok("Admin initial créé avec succès. Username: admin, Password: admin123");
+        return ResponseEntity.ok("Admin initial créé avec succès. Username: admin, Password: admin123. CHANGEZ CE MOT DE PASSE IMMÉDIATEMENT !");
     }
     
     @PostMapping("/activate-user")
-    @Operation(summary = "Activer un utilisateur", description = "Active un utilisateur par son username (accessible via Swagger)")
+    @Operation(summary = "Activer un utilisateur", description = "Active un utilisateur par son username (réservé aux admins)")
     public ResponseEntity<String> activateUser(@RequestParam String username) {
+        // Vérifier que l'utilisateur actuel est un admin
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !hasAdminRole(authentication)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body("Accès refusé : droits administrateur requis");
+        }
+        
         User user = userRepository.findByUsername(username)
                 .orElse(null);
         
@@ -199,5 +214,10 @@ public class AuthController {
         userRepository.save(user);
         
         return ResponseEntity.ok("Utilisateur " + username + " activé avec succès");
+    }
+    
+    private boolean hasAdminRole(Authentication authentication) {
+        return authentication.getAuthorities().stream()
+                .anyMatch(auth -> "admin".equals(auth.getAuthority()));
     }
 }
