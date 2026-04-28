@@ -1,4 +1,4 @@
--- APK Files table
+-- APK Files table (PostgreSQL compatible)
 CREATE TABLE IF NOT EXISTS apk_files (
     id BIGSERIAL PRIMARY KEY,
     file_name VARCHAR(255) NOT NULL,

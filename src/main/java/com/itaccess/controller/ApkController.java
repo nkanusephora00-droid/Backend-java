@@ -28,7 +28,7 @@ public class ApkController {
     
     @PostMapping("/upload")
     @Operation(summary = "Uploader un APK", description = "Upload un fichier APK avec ses métadonnées")
-    public ResponseEntity<ApkFileDTO> uploadApk(
+    public ResponseEntity<?> uploadApk(
             @Parameter(hidden = true) @CurrentUser UserInfo currentUser,
             @RequestParam("file") MultipartFile file,
             @RequestParam(value = "applicationId", required = false) Long applicationId,
@@ -36,11 +36,25 @@ public class ApkController {
             @RequestParam(value = "packageName", required = false) String packageName,
             @RequestParam(value = "description", required = false) String description) {
         try {
+            // Validate file
+            if (file.isEmpty()) {
+                return ResponseEntity.badRequest().body("Le fichier ne peut pas être vide");
+            }
+            
+            String originalFileName = file.getOriginalFilename();
+            if (originalFileName == null || !originalFileName.toLowerCase().endsWith(".apk")) {
+                return ResponseEntity.badRequest().body("Seuls les fichiers APK sont autorisés");
+            }
+            
             ApkFileDTO apkFile = apkService.uploadApk(file, applicationId, currentUser.getId(), 
                     version, packageName, description);
             return ResponseEntity.status(HttpStatus.CREATED).body(apkFile);
         } catch (IOException e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Erreur lors de l'upload: " + e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Erreur inattendue: " + e.getMessage());
         }
     }
     
