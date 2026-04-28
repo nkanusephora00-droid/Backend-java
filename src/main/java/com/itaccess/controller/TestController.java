@@ -41,7 +41,7 @@ public class TestController {
     }
     
     @PostMapping
-    @Operation(summary = "Créer un test", description = "Crée un nouveau test")
+    @Operation(summary = "Créer un test", description = "Crée un nouveau test (authentification requise)")
     public ResponseEntity<TestDTO> createTest(
             @Parameter(hidden = true) @CurrentUser UserInfo currentUser,
             @Valid @RequestBody TestRequest request) {
@@ -50,16 +50,19 @@ public class TestController {
     }
     
     @PutMapping("/{id}")
-    @Operation(summary = "Modifier un test", description = "Modifie un test existant")
+    @Operation(summary = "Modifier un test", description = "Modifie un test existant (authentification requise)")
     public ResponseEntity<TestDTO> updateTest(
             @PathVariable Long id,
+            @Parameter(hidden = true) @CurrentUser UserInfo currentUser,
             @Valid @RequestBody TestRequest request) {
         return ResponseEntity.ok(testService.updateTest(id, request));
     }
     
     @DeleteMapping("/{id}")
-    @Operation(summary = "Supprimer un test", description = "Supprime un test")
-    public ResponseEntity<Void> deleteTest(@PathVariable Long id) {
+    @Operation(summary = "Supprimer un test", description = "Supprime un test (authentification requise)")
+    public ResponseEntity<Void> deleteTest(
+            @PathVariable Long id,
+            @Parameter(hidden = true) @CurrentUser UserInfo currentUser) {
         testService.deleteTest(id);
         return ResponseEntity.noContent().build();
     }

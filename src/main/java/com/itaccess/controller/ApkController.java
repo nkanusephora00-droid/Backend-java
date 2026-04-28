@@ -100,8 +100,10 @@ public class ApkController {
     }
     
     @DeleteMapping("/{id}")
-    @Operation(summary = "Supprimer un APK", description = "Supprime un fichier APK")
-    public ResponseEntity<Void> deleteApk(@PathVariable Long id) {
+    @Operation(summary = "Supprimer un APK", description = "Supprime un fichier APK (authentification requise)")
+    public ResponseEntity<Void> deleteApk(
+            @PathVariable Long id,
+            @Parameter(hidden = true) @CurrentUser UserInfo currentUser) {
         try {
             apkService.deleteApk(id);
             return ResponseEntity.noContent().build();

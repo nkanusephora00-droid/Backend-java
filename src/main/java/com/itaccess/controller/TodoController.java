@@ -34,13 +34,15 @@ public class TodoController {
     }
     
     @GetMapping("/{id}")
-    @Operation(summary = "Tâche par ID", description = "Retourne une tâche par son ID")
-    public ResponseEntity<TodoDTO> getTodoById(@PathVariable Long id) {
+    @Operation(summary = "Tâche par ID", description = "Retourne une tâche par son ID (authentification requise)")
+    public ResponseEntity<TodoDTO> getTodoById(
+            @PathVariable Long id,
+            @Parameter(hidden = true) @CurrentUser UserInfo currentUser) {
         return ResponseEntity.ok(todoService.getById(id));
     }
     
     @PostMapping
-    @Operation(summary = "Créer une tâche", description = "Crée une nouvelle tâche")
+    @Operation(summary = "Créer une tâche", description = "Crée une nouvelle tâche (authentification requise)")
     public ResponseEntity<TodoDTO> createTodo(
             @Parameter(hidden = true) @CurrentUser UserInfo currentUser,
             @Valid @RequestBody TodoRequest request) {
@@ -49,23 +51,28 @@ public class TodoController {
     }
     
     @PutMapping("/{id}")
-    @Operation(summary = "Modifier une tâche", description = "Modifie une tâche existante")
+    @Operation(summary = "Modifier une tâche", description = "Modifie une tâche existante (authentification requise)")
     public ResponseEntity<TodoDTO> updateTodo(
             @PathVariable Long id,
+            @Parameter(hidden = true) @CurrentUser UserInfo currentUser,
             @Valid @RequestBody TodoRequest request) {
         return ResponseEntity.ok(todoService.update(id, request));
     }
     
     @DeleteMapping("/{id}")
-    @Operation(summary = "Supprimer une tâche", description = "Supprime une tâche")
-    public ResponseEntity<Void> deleteTodo(@PathVariable Long id) {
+    @Operation(summary = "Supprimer une tâche", description = "Supprime une tâche (authentification requise)")
+    public ResponseEntity<Void> deleteTodo(
+            @PathVariable Long id,
+            @Parameter(hidden = true) @CurrentUser UserInfo currentUser) {
         todoService.delete(id);
         return ResponseEntity.noContent().build();
     }
     
     @PatchMapping("/{id}/toggle")
-    @Operation(summary = "Basculer l'état", description = "Marque une tâche comme terminée/non terminée")
-    public ResponseEntity<TodoDTO> toggleTodo(@PathVariable Long id) {
+    @Operation(summary = "Basculer l'état", description = "Marque une tâche comme terminée/non terminée (authentification requise)")
+    public ResponseEntity<TodoDTO> toggleTodo(
+            @PathVariable Long id,
+            @Parameter(hidden = true) @CurrentUser UserInfo currentUser) {
         return ResponseEntity.ok(todoService.toggleComplete(id));
     }
 }

@@ -26,14 +26,14 @@ public class HabilitationController {
     }
     
     @PostMapping
-    @Operation(summary = "Créer une habilitation", description = "Crée une nouvelle habilitation")
+    @Operation(summary = "Créer une habilitation", description = "Crée une nouvelle habilitation (authentification requise)")
     public ResponseEntity<HabilitationDTO> createHabilitation(@RequestBody HabilitationDTO dto) {
         HabilitationDTO created = habilitationService.createHabilitation(dto);
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
     
     @DeleteMapping("/{id}")
-    @Operation(summary = "Supprimer une habilitation", description = "Supprime une habilitation")
+    @Operation(summary = "Supprimer une habilitation", description = "Supprime une habilitation (authentification requise)")
     public ResponseEntity<Void> deleteHabilitation(@PathVariable Long id) {
         habilitationService.deleteHabilitation(id);
         return ResponseEntity.noContent().build();

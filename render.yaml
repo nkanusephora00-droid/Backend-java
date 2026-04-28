@@ -10,6 +10,8 @@ services:
         fromDatabase:
           name: itaccess-db
           property: connectionString
+      - key: SPRING_DATASOURCE_DRIVER_CLASS
+        value: org.postgresql.Driver
       - key: SPRING_DATASOURCE_USERNAME
         fromDatabase:
           name: itaccess-db
@@ -18,6 +20,8 @@ services:
         fromDatabase:
           name: itaccess-db
           property: password
+      - key: HIBERNATE_DIALECT
+        value: org.hibernate.dialect.PostgreSQLDialect
       - key: JWT_SECRET
         generateValue: true
       - key: SERVER_PORT
