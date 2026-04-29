@@ -6,10 +6,12 @@ import com.itaccess.dto.TestSessionRequest;
 import com.itaccess.entity.Application;
 import com.itaccess.entity.Test;
 import com.itaccess.entity.TestSession;
+import com.itaccess.entity.User;
 import com.itaccess.exception.ResourceNotFoundException;
 import com.itaccess.repository.ApplicationRepository;
 import com.itaccess.repository.TestRepository;
 import com.itaccess.repository.TestSessionRepository;
+import com.itaccess.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,10 +22,11 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class TestSessionService {
-    
+
     private final TestSessionRepository testSessionRepository;
     private final TestRepository testRepository;
     private final ApplicationRepository applicationRepository;
+    private final UserRepository userRepository;
     
     public List<TestSessionDTO> getAllTestSessions() {
         return testSessionRepository.findAll().stream()
@@ -88,18 +91,25 @@ public class TestSessionService {
     
     private TestSessionDTO toDTOWithStats(TestSession session) {
         List<Test> tests = testRepository.findBySessionId(session.getId());
-        
+
         String applicationNom = null;
         if (session.getApplicationId() != null) {
             applicationNom = applicationRepository.findById(session.getApplicationId())
                     .map(Application::getNom)
                     .orElse(null);
         }
-        
+
+        String createdByUsername = null;
+        if (session.getCreatedBy() != null) {
+            createdByUsername = userRepository.findById(session.getCreatedBy())
+                    .map(User::getUsername)
+                    .orElse(null);
+        }
+
         long testsOk = tests.stream().filter(t -> "OK".equals(t.getStatut())).count();
         long testsBug = tests.stream().filter(t -> "BUG".equals(t.getStatut())).count();
         long testsEnCours = tests.stream().filter(t -> "EN COURS".equals(t.getStatut())).count();
-        
+
         return TestSessionDTO.builder()
                 .id(session.getId())
                 .nom(session.getNom())
@@ -112,6 +122,7 @@ public class TestSessionService {
                 .dateCreation(session.getDateCreation())
                 .statut(session.getStatut())
                 .createdBy(session.getCreatedBy())
+                .createdByUsername(createdByUsername)
                 .tests(tests.stream().map(this::toTestDTO).collect(Collectors.toList()))
                 .totalTests(tests.size())
                 .testsOk((int) testsOk)

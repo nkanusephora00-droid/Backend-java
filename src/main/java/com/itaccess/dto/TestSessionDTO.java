@@ -21,6 +21,7 @@ public class TestSessionDTO {
     private LocalDateTime dateCreation;
     private String statut;
     private Long createdBy;
+    private String createdByUsername;
     private List<TestDTO> tests;
     private Integer totalTests;
     private Integer testsOk;
