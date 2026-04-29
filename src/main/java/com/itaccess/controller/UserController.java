@@ -43,6 +43,12 @@ public class UserController {
         return ResponseEntity.ok(userService.getAllUsers(page, size, sortBy, sortDir));
     }
     
+    @GetMapping("/available")
+    @Operation(summary = "Utilisateurs disponibles", description = "Retourne la liste des utilisateurs disponibles pour discuter (tous les utilisateurs)")
+    public ResponseEntity<java.util.List<UserDTO>> getAvailableUsers(@Parameter(hidden = true) @CurrentUser UserInfo currentUser) {
+        return ResponseEntity.ok(userService.getAvailableUsers(currentUser.getId()));
+    }
+    
     @GetMapping("/{id}")
     @PreAuthorize("hasRole('admin')")
     @Operation(summary = "Utilisateur par ID", description = "Retourne un utilisateur par son ID (admin uniquement)")

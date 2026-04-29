@@ -64,6 +64,12 @@ public class MessageController {
         return ResponseEntity.ok(messageService.getUnreadCount(currentUser.getId()));
     }
     
+    @GetMapping("/unread-by-user")
+    @Operation(summary = "Messages non lus par utilisateur", description = "Retourne le nombre de messages non lus groupés par expéditeur")
+    public ResponseEntity<java.util.Map<Long, Long>> getUnreadByUser(@Parameter(hidden = true) @CurrentUser UserInfo currentUser) {
+        return ResponseEntity.ok(messageService.getUnreadByUser(currentUser.getId()));
+    }
+    
     @DeleteMapping("/{id}")
     @Operation(summary = "Supprimer un message", description = "Supprime un message (admin uniquement)")
     public ResponseEntity<Void> deleteMessage(

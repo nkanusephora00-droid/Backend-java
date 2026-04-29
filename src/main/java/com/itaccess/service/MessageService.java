@@ -47,6 +47,15 @@ public class MessageService {
         return messageRepository.countByReceiverIdAndReadFalse(userId);
     }
     
+    public java.util.Map<Long, Long> getUnreadByUser(Long userId) {
+        List<Message> unreadMessages = messageRepository.findByReceiverIdAndReadFalse(userId);
+        return unreadMessages.stream()
+                .collect(java.util.stream.Collectors.groupingBy(
+                    Message::getSenderId,
+                    java.util.stream.Collectors.counting()
+                ));
+    }
+    
     @Transactional
     public MessageDTO create(MessageRequest request, Long senderId) {
         User sender = userRepository.findById(senderId)

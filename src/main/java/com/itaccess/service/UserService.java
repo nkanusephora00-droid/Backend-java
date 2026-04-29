@@ -36,6 +36,13 @@ public class UserService {
         return PageResponse.of(content, userPage.getNumber(), userPage.getSize(), userPage.getTotalElements());
     }
     
+    public List<UserDTO> getAvailableUsers(Long currentUserId) {
+        return userRepository.findAll().stream()
+                .filter(user -> !user.getId().equals(currentUserId))
+                .map(this::toDTO)
+                .collect(Collectors.toList());
+    }
+    
     public UserDTO getUserById(Long id) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Utilisateur non trouvé avec l'ID: " + id));
