@@ -31,6 +31,12 @@ public class TestSessionService {
                 .collect(Collectors.toList());
     }
     
+    public List<TestSessionDTO> getTestSessionsByUser(Long userId) {
+        return testSessionRepository.findByCreatedBy(userId).stream()
+                .map(this::toDTOWithStats)
+                .collect(Collectors.toList());
+    }
+    
     public TestSessionDTO getTestSessionById(Long id) {
         TestSession session = testSessionRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Session non trouvée avec l'ID: " + id));

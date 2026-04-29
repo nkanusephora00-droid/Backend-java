@@ -10,5 +10,7 @@ public interface TestSessionRepository extends JpaRepository<TestSession, Long> 
     
     List<TestSession> findByApplicationId(Long applicationId);
     
+    List<TestSession> findByCreatedBy(Long createdBy);
+    
     List<TestSession> findByOrderByDateCreationDesc();
 }

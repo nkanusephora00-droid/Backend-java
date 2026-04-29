@@ -25,9 +25,12 @@ public class TestSessionController {
     private final TestSessionService testSessionService;
     
     @GetMapping
-    @Operation(summary = "Liste des sessions", description = "Retourne toutes les sessions de test")
-    public ResponseEntity<List<TestSessionDTO>> getAllTestSessions() {
-        return ResponseEntity.ok(testSessionService.getAllTestSessions());
+    @Operation(summary = "Liste des sessions", description = "Retourne toutes les sessions de test (admin voit toutes, utilisateur voit les siennes)")
+    public ResponseEntity<List<TestSessionDTO>> getAllTestSessions(@Parameter(hidden = true) @CurrentUser UserInfo currentUser) {
+        if ("admin".equals(currentUser.getRole())) {
+            return ResponseEntity.ok(testSessionService.getAllTestSessions());
+        }
+        return ResponseEntity.ok(testSessionService.getTestSessionsByUser(currentUser.getId()));
     }
     
     @GetMapping("/{id}")
