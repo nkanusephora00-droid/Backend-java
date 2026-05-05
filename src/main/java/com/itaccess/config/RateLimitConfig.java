@@ -16,8 +16,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 @Slf4j
 public class RateLimitConfig implements Filter {
     
-    private static final int MAX_REQUESTS = 50;
-    private static final long TIME_WINDOW_MS = 60000; // 1 minute
+    private static final int MAX_REQUESTS = 70;
+    private static final long TIME_WINDOW_MS = 160000; // 1 minute
     
     private final ConcurrentHashMap<String, RateLimitInfo> rateLimitMap = new ConcurrentHashMap<>();
     
