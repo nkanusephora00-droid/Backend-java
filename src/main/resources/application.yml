@@ -55,7 +55,7 @@ app:
   
   frontend:
     url: ${FRONTEND_URL:https://it-testerkansa.vercel.app}
-    url: ${FRONTEND_URL:http://localhost:3000}
+    
   
   upload:
     dir: ${UPLOAD_DIR:./uploads/apk}
