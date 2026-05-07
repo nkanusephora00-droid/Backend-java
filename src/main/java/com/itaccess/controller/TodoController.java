@@ -2,6 +2,7 @@ package com.itaccess.controller;
 
 import com.itaccess.dto.TodoDTO;
 import com.itaccess.dto.TodoRequest;
+import com.itaccess.dto.UserWithTodosDTO;
 import com.itaccess.security.CurrentUser;
 import com.itaccess.security.UserInfo;
 import com.itaccess.service.TodoService;
@@ -74,5 +75,14 @@ public class TodoController {
             @PathVariable Long id,
             @Parameter(hidden = true) @CurrentUser UserInfo currentUser) {
         return ResponseEntity.ok(todoService.toggleComplete(id));
+    }
+    
+    @GetMapping("/users")
+    @Operation(summary = "Utilisateurs avec leurs tâches", description = "Retourne tous les utilisateurs qui ont des tâches avec leurs tâches respectives (admin uniquement)")
+    public ResponseEntity<List<UserWithTodosDTO>> getUsersWithTodos(@Parameter(hidden = true) @CurrentUser UserInfo currentUser) {
+        if (!"admin".equals(currentUser.getRole())) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+        return ResponseEntity.ok(todoService.getUsersWithTodos());
     }
 }

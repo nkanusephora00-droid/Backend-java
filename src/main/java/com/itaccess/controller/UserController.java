@@ -71,6 +71,13 @@ public class UserController {
         return ResponseEntity.noContent().build();
     }
     
+    @PatchMapping("/{id}/toggle-status")
+    @PreAuthorize("hasRole('admin')")
+    @Operation(summary = "Désactiver/Réactiver un utilisateur", description = "Désactive ou réactive un utilisateur (admin uniquement)")
+    public ResponseEntity<UserDTO> toggleUserStatus(@PathVariable Long id) {
+        return ResponseEntity.ok(userService.toggleUserStatus(id));
+    }
+    
     @GetMapping("/me")
     @Operation(summary = "Profil actuel", description = "Retourne le profil de l'utilisateur connecté")
     public ResponseEntity<UserDTO> getCurrentUser(@Parameter(hidden = true) @CurrentUser UserInfo currentUser) {

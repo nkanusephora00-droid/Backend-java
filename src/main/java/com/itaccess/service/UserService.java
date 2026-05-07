@@ -107,6 +107,16 @@ public class UserService {
     }
     
     @Transactional
+    public UserDTO toggleUserStatus(Long id) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Utilisateur non trouvé avec l'ID: " + id));
+        
+        user.setIsActive(!user.getIsActive());
+        User updatedUser = userRepository.save(user);
+        return toDTO(updatedUser);
+    }
+    
+    @Transactional
     public UserDTO updateUserProfile(Long id, UserDTO dto) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Utilisateur non trouvé avec l'ID: " + id));
